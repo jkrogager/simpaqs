@@ -10,7 +10,7 @@ __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
 
 
 # -- Input parameters
-Z_MIN = 1
+Z_MIN = 2
 Z_MAX = 4
 EXPTIME = 3600  # seconds
 MOON = 'dark'
@@ -20,6 +20,7 @@ OUTPUT_DIR = 'l1_data'
 ##########################
 
 N_TOTAL = int(sys.argv[1])
+np.random.seed(20230521)
 
 
 abs_template_list, abslog, DLAlog = make_absorber_templates(N_TOTAL, z_min=Z_MIN, z_max=Z_MAX,
