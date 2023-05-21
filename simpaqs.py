@@ -22,7 +22,7 @@ OUTPUT_DIR = 'l1_data'
 N_TOTAL = int(sys.argv[1])
 
 
-abs_template_list, abslog, DLAlog = gmake_absorber_templates(N_TOTAL, z_min=Z_MIN, z_max=Z_MAX,
+abs_template_list, abslog, DLAlog = make_absorber_templates(N_TOTAL, z_min=Z_MIN, z_max=Z_MAX,
                                                              verbose=False)
 
 model_input = add_quasar_continuum(abs_template_list)

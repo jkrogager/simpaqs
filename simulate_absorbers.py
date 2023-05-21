@@ -52,6 +52,7 @@ from VoigtFit.utils import depletion
 from VoigtFit.container.regions import load_lsf
 
 import sys
+import os
 
 import lya
 
@@ -212,6 +213,9 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_m
 
 
 def make_absorber(z_qso, filenum=1, output_dir='abs_templates'):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     wl = np.arange(3600, 9600, 0.1)
     wl_qmost = np.arange(2990, 11000, 0.25)
     kernel = load_lsf('resolution/4MOST_LR_kernel.txt', wl)
@@ -317,10 +321,10 @@ def make_absorber_templates(N_total, z_min=1.0, z_max=4.0, output_dir='abs_templ
     info_list = []
     abs_info_list = []
     quasar_redshifts = np.random.uniform(z_min, z_max, N_total)
+    start = datetime.datetime.now()
     if verbose:
         print("Making absorber templates:")
-    start = datetime.datetime.now()
-    sys.stdout.write("\r %i / %i" % (0, N_total))
+        sys.stdout.write("\r %i / %i" % (0, N_total))
     for num, z_qso in enumerate(quasar_redshifts, 1):
         temp_info, abs_info = make_absorber(z_qso, filenum=num, output_dir=output_dir)
         info_list.append(temp_info)

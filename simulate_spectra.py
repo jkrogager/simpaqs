@@ -14,6 +14,8 @@ from astropy.io import fits
 from astropy.table import Table
 from argparse import ArgumentParser
 import os
+import warnings
+import sys
 import numpy as np
 
 from qmostetc import QMostObservatory, SEDTemplate, Spectrum, L1DXU
@@ -156,9 +158,6 @@ def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5,
 
 
 if __name__ == '__main__':
-    import warnings
-    import sys
-
     parser = ArgumentParser(description="Generate simulated spectra from input catalog")
     parser.add_argument("input", type=str,
                         help="input catalog file, mandatory columns: TEMPLATE/ID, REDSHIFT, MAG, MAG_TYPE")
