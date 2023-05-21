@@ -12,7 +12,7 @@ __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
 # -- Input parameters
 Z_MIN = 1
 Z_MAX = 4
-EXPTIME = 1200  # seconds
+EXPTIME = 3600  # seconds
 MOON = 'dark'
 MAG_MIN = 18
 MAG_MAX = 20.5
