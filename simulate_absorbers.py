@@ -236,11 +236,11 @@ def make_absorber(z_qso, filenum=1, output_dir='abs_templates'):
     metal_profiles = []
     meta_data = []
     for z, logNHI in absorbers:
-        if logNHI > 20:
+        if logNHI > 20.:
             Z = np.random.normal(-1.5, 0.5)
-            N_comps = np.random.randint(2, 10)
-            dV = np.random.uniform(100, 500)
-            delta = np.random.uniform(0., 2.0)
+            N_comps = np.random.randint(3, 10)
+            dV = np.random.uniform(200, 500)
+            delta = 0.73*Z + 1.26 + np.random.normal(0., 0.2)
         else:
             Z = np.random.normal(-1.8, 0.3)
             N_comps = np.random.randint(1, 3)
@@ -301,7 +301,7 @@ def make_absorber(z_qso, filenum=1, output_dir='abs_templates'):
             'FILE': filename,
             'Z_QSO': z_qso,
             'N_ABS': len(meta_data),
-            'N_DLA': len([item for item in meta_data if item['logNHI'] > 20. and item['z_sys'] > 2.05]),
+            'N_DLA': len([item for item in meta_data if item['logNHI'] > 20.3 and item['z_sys'] > 2.05]),
             }
     abs_info = []
     # Keep track of meta data:
