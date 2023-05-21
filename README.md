@@ -55,5 +55,6 @@ in the `l1_data` directory.
 ## Methodology
 
 See the individual documentation in the three simulator modules:
-`simulate_absorbers.py`, `simulate_quasars.py` and `simulate_spectra.py`.
+[simulate absorbers](simulate_absorbers.py), [simulate quasars](simulate_quasars.py),
+and [simulate spectra](simulate_spectra.py).
 
