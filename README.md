@@ -32,7 +32,8 @@ Install 4MOST ETC:
 
 A full run of the simulator can be done using the wrapper script:
 
-   python simpaqs.py  N
+    python simpaqs.py  N
+
 
 where `N` is the number of spectra to generate.
 Alternatively, the individual steps can be customized further using the dedicated scripts. 
