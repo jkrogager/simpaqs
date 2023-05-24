@@ -44,7 +44,7 @@ class Target:
         self.name = f"{model_id}_z{self.redshift:.1f}_mag{self.mag:.1f}"
 
 
-def run_ETC_target(target, output_dir, template_path='quasar_models', CR_rate=1.67e-7):
+def run_ETC_target(target, output_dir, template_path='output/quasar_models', CR_rate=1.67e-7):
     """
     Run the ETC for a given target. The function generates the separate spectra per arm
     and the joined spectrum. The simulations add random cosmic rays.
@@ -150,11 +150,11 @@ def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5,
     print("Applying 4MOST ETC to the catalog:")
     for num, row in enumerate(catalog, 1):
         target = Target(row)
-        run_ETC_target(target, output, template_path='quasar_models')
+        run_ETC_target(target, output, template_path='output/quasar_models')
         sys.stdout.write(f"\r{num}/{len(catalog)}")
         sys.stdout.flush()
     print("")
-    catalog.write(os.path.join(output, 'observations.csv'))
+    catalog.write(os.path.join(output, 'observations.csv'), overwrite=True)
 
 
 if __name__ == '__main__':
@@ -166,9 +166,9 @@ if __name__ == '__main__':
     parser.add_argument('--moon', type=str, default='dark')
     parser.add_argument('--seeing', type=float, default=0.8)
     parser.add_argument('--spectro', type=str, default='LRS', choices=['LRS', 'HRS'])
-    parser.add_argument('--path', type=str, default='quasar_models')
-    parser.add_argument("-o", "--output", type=str, default='l1_data/',
-                        help="output directory [default=./l1_data]")
+    parser.add_argument('--path', type=str, default='output/quasar_models')
+    parser.add_argument("-o", "--output", type=str, default='output/l1_data/',
+                        help="output directory [default=./output/l1_data]")
 
     args = parser.parse_args()
 
