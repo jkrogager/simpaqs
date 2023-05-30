@@ -73,10 +73,6 @@ def run_ETC_target(target, output_dir, template_path='quasar_models', CR_rate=1.
 
     # The target spectrum template.
     spectrum = SEDTemplate(os.path.join(template_path, target.template))
-    N_pix = len(spectrum.wavelength)
-    N_cosmic = np.random.poisson(CR_rate * target.exptime * N_pix)
-    idx = np.random.choice(np.arange(N_pix), N_cosmic, replace=False)
-    spectrum.flux[idx] *= 1.e4
 
     # Add the target spectrum from the template with a magnitude
     obs.set_target(spectrum(target.mag*u.ABmag, target.mag_type), 'point')
@@ -88,6 +84,14 @@ def run_ETC_target(target, output_dir, template_path='quasar_models', CR_rate=1.
         res['target'][np.isnan(res['target'])] = 0.
     if np.isnan(res['sky']).any():
         res['sky'][np.isnan(res['sky'])] = 0.
+
+    # Add cosmic rays:
+    N_pix = len(res)
+    N_cosmic = np.random.poisson(CR_rate * target.exptime * N_pix * 0.8)
+    idx = np.random.choice(np.arange(N_pix), N_cosmic, replace=False)
+    CR_boost = 10**np.random.normal(4.0, 0.1, N_cosmic) * u.electron
+    res['target'][idx] += CR_boost
+    res['noise'][idx] = np.sqrt(res['noise'][idx]**2 + CR_boost * u.electron)
 
     dxu = L1DXU(obs.observatory, res, texp)
 
@@ -173,5 +177,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     catalog = Table.read(args.input)
-    process_catalog(catalog, args.exptime, args.moon, args.spectro, args.output)
+    process_catalog(catalog, exptime=args.exptime, moon=args.moon, spectro=args.spectro, output=args.output)
 
