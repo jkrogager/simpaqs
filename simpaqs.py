@@ -4,6 +4,7 @@ import sys
 from simulate_absorbers import make_absorber_templates
 from simulate_quasars import add_quasar_continuum
 from simulate_spectra import process_catalog
+import numpy as np
 
 __author__ = 'Jens-Kristian Krogager'
 __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
@@ -16,7 +17,7 @@ EXPTIME = 3600  # seconds
 MOON = 'dark'
 MAG_MIN = 18
 MAG_MAX = 20.5
-OUTPUT_DIR = 'l1_data'
+OUTPUT_DIR = 'output/l1_data'
 ##########################
 
 N_TOTAL = int(sys.argv[1])
