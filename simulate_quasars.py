@@ -46,11 +46,12 @@ import numpy as np
 from scipy import stats
 import os
 import glob
+from scipy.interpolate import interp1d
 
 from simqso.sqgrids import *
 from simqso import sqbase
 from simqso.sqrun import buildSpectraBulk,buildQsoSpectrum
-
+from tqdm import tqdm
 
 def add_quasar_continuum(templates, output_dir='output/quasar_models'):
     """
@@ -110,15 +111,28 @@ def add_quasar_continuum(templates, output_dir='output/quasar_models'):
     # ready to generate spectra
     meta, spectra = buildSpectraBulk(wave, qsos, saveSpectra=True)
 
+    print("Creating quasar models:")
 
     # Save the templates:
     all_ids = []
     dnum = len(glob.glob(f'{output_dir}/PAQS_quasar_*.fits')) + 1
-    for num, spec in enumerate(spectra):
+    for num, spec in enumerate(tqdm(spectra)):
         model_id = f'PAQS_quasar_{num+dnum:06}'
         filename = f'{output_dir}/{model_id}.fits'
         all_ids.append(model_id)
         absorber = Table.read(templates['FILE'][num], hdu=1)
+        
+        # Filter any value greater than 1 in the abs_templates 
+        if (absorber['FLUX_DENSITY']>1).any():
+            i_min = np.where(absorber['FLUX_DENSITY']>1)[0][0]
+            i_max = np.where(absorber['FLUX_DENSITY']>1)[0][-1]
+            wav_min = absorber['LAMBDA'][i_min]
+            wav_max = absorber['LAMBDA'][i_max]
+            f = interp1d([absorber['LAMBDA'][i_min-1], absorber['LAMBDA'][i_max+1]], 
+                      [absorber['FLUX_DENSITY'][i_min-1], absorber['FLUX_DENSITY'][i_max+1]])
+            absorber['FLUX_DENSITY'][absorber['FLUX_DENSITY']>1] = f(absorber['LAMBDA'][absorber['FLUX_DENSITY']>1])
+            #print(f'\ninterpolation launched for {model_id} from wavelength {wav_min:.2f} to {wav_max:.2f} for appearance of values greater than 1 in the abs_template')
+        
         spec = spec * absorber['FLUX_DENSITY']
         hdu = fits.HDUList()
         hdr = fits.Header()

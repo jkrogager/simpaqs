@@ -50,6 +50,7 @@ from VoigtFit import show_transitions
 from VoigtFit.utils.Asplund import solar
 from VoigtFit.utils import depletion
 from VoigtFit.container.regions import load_lsf
+from tqdm import tqdm
 
 import sys
 import os
@@ -324,14 +325,14 @@ def make_absorber_templates(N_total, z_min=1.0, z_max=4.0, output_dir='output/ab
     start = datetime.datetime.now()
     if verbose:
         print("Making absorber templates:")
-        sys.stdout.write("\r %i / %i" % (0, N_total))
-    for num, z_qso in enumerate(quasar_redshifts, 1):
+        #sys.stdout.write("\r %i / %i" % (0, N_total))
+    for num, z_qso in enumerate(tqdm(quasar_redshifts), 1):
         temp_info, abs_info = make_absorber(z_qso, filenum=num, output_dir=output_dir)
         info_list.append(temp_info)
         abs_info_list += abs_info
-        if verbose:
-            sys.stdout.write("\r %i / %i" % (num, N_total))
-            sys.stdout.flush()
+        #if verbose:
+            #sys.stdout.write("\r %i / %i" % (num, N_total))
+            #sys.stdout.flush()
     filelog = Table(info_list)
     filelog.write("output/list_templates.csv", format='csv', overwrite=True)
     abslog = Table(abs_info_list)

@@ -17,6 +17,8 @@ import os
 import warnings
 import sys
 import numpy as np
+from scipy.interpolate import interp1d
+from tqdm import tqdm
 
 from qmostetc import QMostObservatory, SEDTemplate, Spectrum, L1DXU
 
@@ -61,7 +63,7 @@ def run_ETC_target(target, output_dir, template_path='output/quasar_models', CR_
     CR_rate : float
         Cosmic ray rate per second per pixel
     """
-
+    # CR_rate = 0 # If we assume sigma-clipping is done to remove cosmic rays
     # Object to simulate the 4MOST observatory, including atmosphere,
     # telescope, spectrograph, CCD.
     qmost = QMostObservatory(target.spectro.lower())
@@ -76,7 +78,7 @@ def run_ETC_target(target, output_dir, template_path='output/quasar_models', CR_
 
     # Add the target spectrum from the template with a magnitude
     obs.set_target(spectrum(target.mag*u.ABmag, target.mag_type), 'point')
-
+    
     # Retrieve the result table
     texp = target.exptime*u.second
     res = obs.expose(texp)
@@ -152,12 +154,12 @@ def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5,
     warnings.simplefilter('ignore', u.UnitsWarning)
     warnings.simplefilter('ignore', fits.card.VerifyWarning)
     print("Applying 4MOST ETC to the catalog:")
-    for num, row in enumerate(catalog, 1):
+    for num, row in enumerate(tqdm(catalog), 1):
         target = Target(row)
         run_ETC_target(target, output, template_path='output/quasar_models')
-        sys.stdout.write(f"\r{num}/{len(catalog)}")
-        sys.stdout.flush()
-    print("")
+        #sys.stdout.write(f"\r{num}/{len(catalog)}")
+        #sys.stdout.flush()
+    #print("")
     catalog.write(os.path.join(output, 'observations.csv'), overwrite=True)
 
 
