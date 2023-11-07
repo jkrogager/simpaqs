@@ -5,6 +5,9 @@ Code to generate a sample of random quasars with realistic absorption systems:
 Lyman-alpha forest, Lyman-limit systems and DLAs, including their metal lines.
 The metal lines only include singly ionized lines plus CIV and SiIV for now.
 
+The code also allows a simulation and exposure time estimation of a 4MOST target catalog.
+For this see the section about *ETC simulator* below.
+
 
 ## Installation
 
@@ -15,17 +18,42 @@ Clone the code:
     python -m pip install -r requirements.txt
 
 
-Install `simqso`:
+Install 4MOST ETC:
+
+    QMOST_PYPI=https://gitlab.4most.eu/api/v4/projects/212/packages/pypi/simple
+    python -m pip install --extra-index-url $QMOST_PYPI qmostetc
+
+
+Install `simqso` (not needed if only running `simulate_catalog.py`):
 
     git clone git@github.com:imcgreer/simqso.git
     cd simqso
     python setup.py install
 
 
-Install 4MOST ETC:
+## Run the ETC and L1 simulation
 
-    QMOST_PYPI=https://gitlab.4most.eu/api/v4/projects/212/packages/pypi/simple
-    python -m pip install --extra-index-url $QMOST_PYPI qmostetc
+The script `simulate_catalog.py` will take a 4MOST target catalog with an associated
+set of spectral templates as well as rules and rulesets to generate a list of exposure
+times per target as well as mock L1 spectra (joined LRS spectra by default). This is run as follows:
+
+    python simulate_catalog.py  catalog_name.fits  --temp-dir templates/ --rules rules.csv --ruleset.csv --output l1_data
+
+The output will be placed in the folder `output/l1_data` by default. The default conditions are as follows:
+
+ - seeing : 0.8 arcsec
+ - airmass : 1.2
+ - moon phase : dark
+
+These conditions can be changed using the command line options: `--seeing`, `--airmass`, `--moon`.
+By default the script generates simulated joined L1 spectra with realistic noise and cosmic ray hits, if the targets are LRS targets. If you also want individual arms for each target, use the option `--arm ALL`. This will also generate spectra in case of HRS targets that do not have a joined counterpart.
+
+The catalog, templates, rules and rulesets must follow the 4FS file formats!
+
+### Output
+
+The output directory is given in the command line `--output` and will contain the simulated L1 spectra (see the L1 pipeline documentationand DXU for format definitions). This folder will also contain a file `exposure_times.csv` which lists the target name, magnitude, estimated exposure time and redshift.
+
 
 
 ## Run the full simulator
@@ -39,7 +67,7 @@ where `N` is the number of spectra to generate.
 Alternatively, the individual steps can be customized further using the dedicated scripts. 
 
 
-## Output
+### Output
 The code generates: 
  - absorption transmission profiles (`abs_templates/`)
  - noiseless quasar continuum models with absorption (`quasar_models/`)
