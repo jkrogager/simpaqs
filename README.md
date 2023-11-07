@@ -37,7 +37,7 @@ The script `simulate_catalog.py` will take a 4MOST target catalog with an associ
 set of spectral templates as well as rules and rulesets to generate a list of exposure
 times per target as well as mock L1 spectra (joined LRS spectra by default). This is run as follows:
 
-    python simulate_catalog.py  catalog_name.fits  --temp-dir templates/ --rules rules.csv --ruleset.csv --output l1_data
+    python simulate_catalog.py  catalog_name.fits  --temp-dir templates/ --rules rules.csv --ruleset ruleset.csv --output l1_data
 
 The output will be placed in the folder `output/l1_data` by default. The default conditions are as follows:
 
