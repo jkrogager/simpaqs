@@ -60,7 +60,7 @@ def update_header(hdu_list, target):
 def process_catalog(catalog, *, ruleset_fname, rules_fname,
                     output_dir='l1_data', template_path='',
                     airmass=1.2, seeing=0.8, moon='dark',
-                    CR_rate=1.67e-7, l1_type='joined'):
+                    CR_rate=1.67e-7, l1_type='joined', N_targets=None):
 
     catalog['MOON'] = moon
     catalog['SEEING'] = seeing
@@ -81,6 +81,10 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
     warnings.simplefilter('ignore', fits.card.VerifyWarning)
     print("Applying 4MOST ETC to the catalog:")
     exptime_log = []
+    if N_targets:
+        idx = np.random.choice(np.arange(len(catalog)), N_targets, replace=False)
+        catalog = catalog[idx]
+
     for num, row in enumerate(catalog, 1):
         ruleset_name = row['RULESET']
         target_name = row['NAME']
@@ -167,6 +171,7 @@ def main():
     parser.add_argument('--airmass', type=float, default=1.2)
     parser.add_argument('--moon', type=str, default='dark', choices=['dark', 'gray', 'bright'])
     parser.add_argument('--seeing', type=float, default=0.8)
+    parser.add_argument('-n', '--number', type=int, default=None)
     parser.add_argument('--rules', type=str, help='Rules definition (FITS or CSV)')
     parser.add_argument('--ruleset', type=str, help='Ruleset definition (FITS or CSV)')
     parser.add_argument('--temp-dir', type=str, default='./', help='Directory of spectral templates')
@@ -188,7 +193,8 @@ def main():
                     airmass=args.airmass,
                     seeing=args.seeing,
                     moon=args.moon,
-                    l1_type=args.arm)
+                    l1_type=args.arm,
+                    N_targets=args.number)
     t2 = datetime.datetime.now()
     dt = t2 - t1
     print(f"Finished simulation of {len(catalog)} targets in {dt.total_seconds():.1f} seconds")
