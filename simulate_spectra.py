@@ -46,7 +46,7 @@ class Target:
         self.name = f"{model_id}_z{self.redshift:.1f}_mag{self.mag:.1f}"
 
 
-def run_ETC_target(target, output_dir, template_path='output/quasar_models', CR_rate=1.67e-7):
+def run_ETC_target(qmost, target, output_dir, template_path='output/quasar_models', CR_rate=1.67e-7):
     """
     Run the ETC for a given target. The function generates the separate spectra per arm
     and the joined spectrum. The simulations add random cosmic rays.
@@ -64,9 +64,6 @@ def run_ETC_target(target, output_dir, template_path='output/quasar_models', CR_
         Cosmic ray rate per second per pixel
     """
     # CR_rate = 0 # If we assume sigma-clipping is done to remove cosmic rays
-    # Object to simulate the 4MOST observatory, including atmosphere,
-    # telescope, spectrograph, CCD.
-    qmost = QMostObservatory(target.spectro.lower())
 
     # The observation with certain conditions: airmass (zenith angle), seeing,
     # moon brightness
@@ -154,9 +151,12 @@ def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5,
     warnings.simplefilter('ignore', u.UnitsWarning)
     warnings.simplefilter('ignore', fits.card.VerifyWarning)
     print("Applying 4MOST ETC to the catalog:")
+    # Object to simulate the 4MOST observatory, including atmosphere,
+    # telescope, spectrograph, CCD.
+    qmost = QMostObservatory(spectro.lower())
     for num, row in enumerate(tqdm(catalog), 1):
         target = Target(row)
-        run_ETC_target(target, output, template_path='output/quasar_models')
+        run_ETC_target(qmost, target, output, template_path='output/quasar_models')
         #sys.stdout.write(f"\r{num}/{len(catalog)}")
         #sys.stdout.flush()
     #print("")
