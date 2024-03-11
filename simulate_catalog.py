@@ -197,7 +197,11 @@ def main():
                     N_targets=args.number)
     t2 = datetime.datetime.now()
     dt = t2 - t1
-    print(f"Finished simulation of {len(catalog)} targets in {dt.total_seconds():.1f} seconds")
+    if args.number:
+        N_targets = args.number
+    else:
+        N_targets = len(catalog)
+    print(f"Finished simulation of {N_targets} targets in {dt.total_seconds():.1f} seconds")
 
 
 if __name__ == '__main__':
