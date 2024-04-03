@@ -40,7 +40,7 @@ class Target:
         self.ra = np.random.uniform(0., 360.)
         self.dec = np.random.uniform(-5., -80.)
         # assign TRG_UID:
-        self.uid = f"{self.ra}{self.dec}".replace('-', '').replace('.', '')
+        self.uid = np.random.randint(10000000)
 
         # assign CNAME:
         model_id = row['ID']
