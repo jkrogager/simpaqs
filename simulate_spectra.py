@@ -12,6 +12,7 @@ __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
 import astropy.units as u
 from astropy.io import fits
 from astropy.table import Table
+from astropy.time import Time
 from argparse import ArgumentParser
 import os
 import warnings
@@ -120,17 +121,32 @@ def run_ETC_target(qmost, target, output_dir, template_path='output/quasar_model
 
 
 def update_header(hdu_list, target):
-    hdu_list[0].header['OBID'] = 1
-    hdu_list[0].header['PROG_ID'] = 'PAQS-ETC'
-    hdu_list[0].header['MJD-OBS'] = '20230519T105404'
-    hdu_list[0].header['MJD-END'] = '20230519T111404'
+    specuid = np.random.randint(10000000)
+    hdu_list[0].header['OBID'] = 101
+    hdu_list[0].header['OBID1'] = 101
+    hdu_list[0].header['PROG_ID'] = 'SIMPAQS'
+    hdu_list[0].header['MJD-OBS'] = Time.now().mjd
+    hdu_list[0].header['MJD-END'] = Time.now().mjd
     hdu_list[0].header['TRG_UID'] = target.uid
     hdu_list[0].header['TRG_NME'] = target.name
     hdu_list[1].header['TRG_UID'] = target.uid
     hdu_list[1].header['TRG_NME'] = target.name
+    hdu_list[0].header['OBJ_UID'] = target.uid
+    hdu_list[0].header['OBJ_NME'] = target.name
+    hdu_list[1].header['OBJ_UID'] = target.uid
+    hdu_list[1].header['OBJ_NME'] = target.name
+    hdu_list[0].header['SPECUID'] = specuid
+    hdu_list[1].header['SPECUID'] = specuid
+
     hdu_list[1].header['TRG_MAG'] = target.mag
     hdu_list[1].header['TRG_Z'] = target.redshift
     hdu_list[1].header['TRG_TMP'] = os.path.basename(target.template)
+
+    hdu_list[0].header['ESO TEL AIRM END'] = target.airmass
+    hdu_list[0].header['ESO TEL AIRM START'] = target.airmass
+    hdu_list[0].header['ESO TEL AMBI FWHM END'] = target.seeing
+    hdu_list[0].header['ESO TEL AMBI FWHM START'] = target.seeing
+    hdu_list[0].header['ESO TEL AMBI MOON'] = target.moon
     return hdu_list
 
 
