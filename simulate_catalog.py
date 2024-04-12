@@ -29,7 +29,7 @@ def load_rulesets(qmost, ruleset_fname, rules_fname):
     return rulesets
 
 
-def update_header(hdu_list, target):
+def update_header(hdu_list, target, prog_id='4MOST-ETC'):
     specuid = np.random.randint(10000000)
     hdu_list[0].header['OBID'] = 101
     hdu_list[0].header['OBID1'] = 101
@@ -38,7 +38,7 @@ def update_header(hdu_list, target):
     hdu_list[0].header['ESO TEL AMBI FWHM END'] = target['SEEING']
     hdu_list[0].header['ESO TEL AMBI FWHM START'] = target['SEEING']
     hdu_list[0].header['ESO TEL AMBI MOON'] = target['MOON']
-    hdu_list[0].header['PROG_ID'] = 'QMOST-ETC'
+    hdu_list[0].header['PROG_ID'] = prog_id
     hdu_list[0].header['MJD-OBS'] = Time.now().mjd
     hdu_list[0].header['MJD-END'] = Time.now().mjd
     hdu_list[0].header['OBJ_UID'] = hash(target['NAME'])
@@ -60,7 +60,8 @@ def update_header(hdu_list, target):
 def process_catalog(catalog, *, ruleset_fname, rules_fname,
                     output_dir='l1_data', template_path='',
                     airmass=1.2, seeing=0.8, moon='dark',
-                    CR_rate=1.67e-7, l1_type='joined', N_targets=None):
+                    CR_rate=1.67e-7, l1_type='joined', N_targets=None,
+                    prog_id='4MOST-ETC'):
 
     catalog['MOON'] = moon
     catalog['SEEING'] = seeing
@@ -147,7 +148,7 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
             output = os.path.join(output_dir, f"{target_name}_LJ1.fits")
             try:
                 hdu_list = dxu.joined()
-                hdu_list = update_header(hdu_list, row)
+                hdu_list = update_header(hdu_list, row, prog_id)
                 hdu_list.writeto(output, overwrite=True)
             except ValueError as e:
                 print(f"Failed to save the joined spectrum: {row['TEMPLATE']}")
@@ -178,7 +179,8 @@ def main():
     parser.add_argument("-o", "--output", type=str, default='l1_data',
                         help="output directory [default=./l1_data]")
     parser.add_argument('--arm', type=str, default='J', choices=['J', 'joined', 'ALL', 'a'])
-
+    parser.add_argument('--prog', type=str, default='4MOST-ETC',
+                        help="Determines the PROG_ID header keyword")
 
     args = parser.parse_args()
 
@@ -194,7 +196,9 @@ def main():
                     seeing=args.seeing,
                     moon=args.moon,
                     l1_type=args.arm,
-                    N_targets=args.number)
+                    N_targets=args.number,
+                    prog_id=args.prog,
+                    )
     t2 = datetime.datetime.now()
     dt = t2 - t1
     if args.number:

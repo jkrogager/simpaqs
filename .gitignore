@@ -1,0 +1,8 @@
+__pycache__/
+list_absorbers.csv
+list_dlas.csv
+list_templates.csv
+output/
+s6_test/
+*.pyc
+*.DS_Store
