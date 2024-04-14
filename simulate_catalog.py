@@ -61,7 +61,7 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
                     output_dir='l1_data', template_path='',
                     airmass=1.2, seeing=0.8, moon='dark',
                     CR_rate=1.67e-7, l1_type='joined', N_targets=None,
-                    prog_id='4MOST-ETC'):
+                    prog_id='4MOST-ETC', t_min=20*u.min, t_max=120*u.min):
 
     catalog['MOON'] = moon
     catalog['SEEING'] = seeing
@@ -98,10 +98,10 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
         mag_type_str = row['MAG_TYPE']
         survey, band, ab_vega = mag_type_str.split('_')
         mag_type = [filt_id for filt_id in Filter.list()
-                    if survey in filt_id and '.'+band in filt_id][0]
+                    if survey.upper() in filt_id.upper() and '.'+band in filt_id][0]
         mag_unit = u.ABmag
-        if ab_vega != 'AB':
-            print("Warning not AB magnitude in catalog... may be incorrect")
+        # if ab_vega != 'AB':
+        #     print("Warning not AB magnitude in catalog... may be incorrect")
         mag = row['MAG'] * mag_unit
         SED = SED.redshift(row['REDSHIFT_ESTIMATE'])
         etc.set_target(SED(mag, mag_type), 'point')
@@ -109,6 +109,10 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
 
         # Get and print the exposure time
         texp = etc.get_exptime()
+        if texp < t_min:
+            texp = t_min
+        if texp > t_max:
+            texp = t_max
         exptime_log.append({'NAME': target_name, 'MAG': row['MAG'],
                             'TEXP': texp, 'REDSHIFT': row['REDSHIFT_ESTIMATE']})
 
@@ -122,7 +126,7 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
         N_pix = len(res)
         N_cosmic = np.random.poisson(CR_rate * texp.value * N_pix * 0.8)
         idx = np.random.choice(np.arange(N_pix), N_cosmic, replace=False)
-        CR_boost = 10**np.random.normal(3.5, 0.1, N_cosmic) * u.electron
+        CR_boost = 10**np.random.normal(3.0, 0.15, N_cosmic) * u.electron
         res['target'][idx] += CR_boost
         res['noise'][idx] = np.sqrt(res['noise'][idx]**2 + CR_boost * u.electron)
 
