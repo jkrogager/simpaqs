@@ -86,3 +86,17 @@ See the individual documentation in the three simulator modules:
 [simulate absorbers](simulate_absorbers.py), [simulate quasars](simulate_quasars.py),
 and [simulate spectra](simulate_spectra.py).
 
+
+## Create a mock target catalog and simulate it
+
+Using the `prepare_paqs_subset.py` script, you can pick a random subset of the full target catalog. Note that the file path of the catalog is hard-coded in the script. The script assigns a template filename to each entry in the catalog.
+Next you can run the catalog through the simulator which takes our rules and ruleset definitions into account in order to calculate the exposure times for each target. Below I use the BAL models created using `simulate_quasars.py 500 --bal`.
+
+    python3 simulate_catalog.py PAQS_simulated_BAL_catalog.fits
+        --rules ../../targets/paqs_catalog/output/12APR2024/PAQS_20240412_rules.csv
+        --ruleset ../../targets/paqs_catalog/output/12APR2024/PAQS_20240412_ruleset.csv
+        --temp-dir output/BAL_models
+        -o output/simpaqs_l1_v2 --arm J --prog PAQS
+
+The `--prog` option add the value 'PAQS' to the FITS header of the output.
+
