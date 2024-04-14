@@ -15,7 +15,8 @@ import glob
 catalog_path = '/Users/krogager/Projects/4GPAQS/targets/paqs_catalog/output/12APR2024'
 catalog_fname = glob.glob(os.path.join(catalog_path, 'PAQS_catalog*.fits.gz'))[0]
 
-models = Table.read('output/quasar_models/model_input.csv')
+# models = Table.read('output/quasar_models/model_input.csv')
+models = Table.read('output/BAL_models/model_input.csv')
 temp_fname = [f'{name}.fits' for name in models['ID']]
 
 catalog = Table.read(catalog_fname)
@@ -26,6 +27,6 @@ subset = catalog[idx]
 subset['TEMPLATE_REDSHIFT'] = models['REDSHIFT']
 subset['TEMPLATE'] = temp_fname
 
-subset.write('PAQS_simulated_catalog.fits', overwrite=True)
+subset.write('PAQS_simulated_BAL_catalog.fits', overwrite=True)
 
 

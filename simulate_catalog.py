@@ -100,8 +100,8 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
         mag_type = [filt_id for filt_id in Filter.list()
                     if survey.upper() in filt_id.upper() and '.'+band in filt_id][0]
         mag_unit = u.ABmag
-        if ab_vega != 'AB':
-            print("Warning not AB magnitude in catalog... may be incorrect")
+        # if ab_vega != 'AB':
+        #     print("Warning not AB magnitude in catalog... may be incorrect")
         mag = row['MAG'] * mag_unit
         SED = SED.redshift(row['REDSHIFT_ESTIMATE'])
         etc.set_target(SED(mag, mag_type), 'point')
