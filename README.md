@@ -2,7 +2,8 @@
 
 
 Code to generate a sample of random quasars with realistic absorption systems:
-Lyman-alpha forest, Lyman-limit systems and DLAs, including their metal lines.
+Lyman-alpha forest, Lyman-limit systems and DLAs, including their metal lines
+and molecular lines in 10% of the DLAs.
 The metal lines only include singly ionized lines plus CIV and SiIV for now.
 
 The code also allows a simulation and exposure time estimation of a 4MOST target catalog.
