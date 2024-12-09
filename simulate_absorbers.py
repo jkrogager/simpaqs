@@ -13,6 +13,8 @@ We use the following distributions for the absorber parameters:
         N_comps = Random Int(2, 10)
         dV_90 = Uniform(100, 500)
         delta = Uniform(0., 2.0)
+        H2 absorption is included in 10% of systems
+
     For 18 < log(NHI) <= 20.:
         [M/H] = Gaussian(-1.8, 0.3)
         N_comps = Random Int(1, 3)
@@ -52,12 +54,14 @@ from VoigtFit.utils import depletion
 from VoigtFit.container.regions import load_lsf
 from tqdm import tqdm
 
+import glob
 import sys
 import os
 
 import lya
 
 
+H2_TEMPLATES = glob.glob('molecules/*.fits')
 depletion_sequence = depletion.coeffs
 
 
@@ -213,6 +217,17 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_m
     return transmission, parameters, log, linelist
 
 
+def add_H2(z, wl):
+    temp_fname = np.random.choice(H2_TEMPLATES)
+    H2 = Table.read(temp_fname)
+    T = H2.meta['T_01']
+    tau = np.interp(wl, H2['WAVE'], H2['TAU'], left=0., right=0.)
+    logN = np.random.uniform(18, 21)
+    tau *= 10**(logN-20)
+    transmission = np.exp(-tau)
+    return transmission, logN, T
+
+
 def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -239,9 +254,17 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
     for z, logNHI in absorbers:
         if logNHI > 20.:
             Z = np.random.normal(-1.5, 0.5)
+            # Z = np.random.uniform(-3.0, 0.1)
             N_comps = np.random.randint(3, 10)
             dV = np.random.uniform(200, 500)
             delta = 0.73*Z + 1.26 + np.random.normal(0., 0.2)
+            H2_random_number = np.random.uniform(0, 100)
+            if z > 2.4 and H2_random_number < 10:
+                P_H2, logNH2, T_01 = add_H2(z, wl)
+            else:
+                this_H2_profile = np.ones_like(wl)
+                logNH2 = 0
+                T_01 = 0
         else:
             Z = np.random.normal(-1.8, 0.3)
             N_comps = np.random.randint(1, 3)
@@ -255,10 +278,12 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
                           'logNHI': logNHI,
                           'Z_tot': Z,
                           'dV90': dV,
-                          'delta': delta})
+                          'delta': delta,
+                          'logNH2': logNH2,
+                          'T_01': T_01})
     P_metals = np.prod(metal_profiles, axis=0)
 
-    transmission = P_lya * P_metals
+    transmission = P_lya * P_metals * P_H2
     profile_conv = convolve(transmission, kernel)
     profile_obs = np.interp(wl_qmost, wl, profile_conv)
 
@@ -283,6 +308,8 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
         h = fits.Header()
         h['REDSHIFT'] = item['z_sys']
         h['LOG_NHI'] = item['logNHI']
+        h['LOG_NH2'] = item['logNH2']
+        h['H2_TEMP'] = item['T_01']
         h['Z_TOT'] = item['Z_tot']
         h['DV_90'] = item['dV90']
         h['DELTA'] = item['delta']
@@ -310,6 +337,8 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
         abs_info.append({'FILE': filename,
                          'Z_ABS': item['z_sys'],
                          'LOG_NHI': item['logNHI'],
+                         'LOG_NH2': item['logNH2'],
+                         'H2_TEMP': item['T_01'],
                          'Z_TOT': item['Z_tot'],
                          'DELTA': item['delta'],
                          'DV_90': item['dV90'],
@@ -357,13 +386,13 @@ def main():
                         help="Number of random absorption sightlines to generate")
     parser.add_argument("--z_min", type=float, default=1.,
                         help="Minimum redshift to simulate  [default=1]")
-    parser.add_argument("--z_max", type=float, default=1.,
+    parser.add_argument("--z_max", type=float, default=4.,
                         help="maximum redshift to simulate  [default=4]")
     parser.add_argument("-o", "--output", type=str, default='output/abs_templates',
                         help="Output directory [default=output/abs_templates]")
 
     args = parser.parse_args()
-    templates, absorbers, DLAs = make_absorber_templates(args.N, args.z_min, args.z_max, args.output)
+    templates, absorbers, DLAs = make_absorber_templates(args.number, args.z_min, args.z_max, args.output)
 
 
 if __name__ == '__main__':

@@ -126,7 +126,7 @@ def process_catalog(catalog, *, ruleset_fname, rules_fname,
         N_pix = len(res)
         N_cosmic = np.random.poisson(CR_rate * texp.value * N_pix * 0.8)
         idx = np.random.choice(np.arange(N_pix), N_cosmic, replace=False)
-        CR_boost = 10**np.random.normal(3.0, 0.15, N_cosmic) * u.electron
+        CR_boost = 10**np.random.normal(2.0, 0.15, N_cosmic) * u.electron
         res['target'][idx] += CR_boost
         res['noise'][idx] = np.sqrt(res['noise'][idx]**2 + CR_boost * u.electron)
 

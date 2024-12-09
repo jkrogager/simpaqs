@@ -11,7 +11,9 @@ __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
 
 import numpy as np
 import powerlaw
-from scipy.signal import fftconvolve, gaussian
+from scipy.signal import fftconvolve
+from scipy.signal.windows import gaussian
+from scipy.interpolate import UnivariateSpline
 
 HI_data = [(1215.6696, 4.16e-01, 6.265e+08, 1.008),
            (1025.7201, 7.91e-02, 1.897e+08, 1.008),
@@ -49,30 +51,27 @@ def get_absorbers(zmin, zmax, verbose=False):
         for N randomly drawn absorbers
     """
     z0 = 0.5*(zmin + zmax)
-    # Approximate the distribution function as a single power-law:
-    # Kim et al. A&A 552, A77 (2013)
-    logN = np.linspace(13., 21.5, 1000)
-    logf = -1.43*logN + 7.34
+    # Approximate the NHI distribution function as a cubic spline
+    # following Prochaska et al. MNRAS 438, 476 (2014)
+    logn_i = np.array([12, 15, 17, 18, 20, 21, 21.5, 22])
+    logf_i = np.array([-9.72, -14.41, -17.94, -19.39, -21.28, -22.82, -23.95, -25.50])
+    logfNHI = UnivariateSpline(logn_i, logf_i, s=0)
+
+    logN = np.linspace(13., 22., 100)
+    logf = logfNHI(logN)
 
     # The total number expected is then:
     X = abs_length(zmin, zmax)
-    dndz_scale = 10**(1.61*np.log10((z0+1)/(2.5+1)))
+    dndz_scale = 10**(1.61 * np.log10((z0 + 1) / (2.5 + 1)))
     N_avg = int(np.trapz(10**logf, 10**logN) * X * dndz_scale)
     N = np.random.poisson(N_avg)
     if verbose:
         print(f"Generating {N} random Lya forest lines")
 
-    # The single power-law overshoots the number of high-N systems:
-    # random_NHI = powerlaw.Power_Law(xmin=1.e13, parameters=[1.40]).generate_random(N)
-    # Use broken power-law:
-    N2 = int(N*0.00032)
-    N1 = N - N2
-    random_NHI1 = powerlaw.Power_Law(xmin=1.e13, xmax=2.e21, parameters=[1.40]).generate_random(N1)
-    good = random_NHI1 < 2.e21
-    if np.sum(good) != N1:
-        N2 += N1-np.sum(good)
-    random_NHI2 = powerlaw.Power_Law(xmin=2.e21, xmax=1.e22, parameters=[3.48]).generate_random(N2)
-    random_NHI = np.concatenate([random_NHI1[good], random_NHI2])
+    cdf = np.cumsum(10**logN * 10**(logf))
+    cdf = cdf/np.max(cdf)
+    random_index = np.random.uniform(0., 1., N)
+    random_NHI = np.interp(random_index, cdf, 10**logN)
     # Should technically be evenly distributed in X(z)
     # but if I use small intervals in z, this is negligible
     random_z = np.random.uniform(zmin, zmax, N)

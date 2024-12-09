@@ -150,7 +150,7 @@ def update_header(hdu_list, target):
     return hdu_list
 
 
-def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5,
+def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5, template_path='',
                     exptime=1200, moon='dark', spectro='LRS', output='l1_data'):
     catalog['TEMPLATE'] = ['%s.fits' % f for f in catalog['ID']]
     catalog['EXPTIME'] = exptime
@@ -195,5 +195,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     catalog = Table.read(args.input)
-    process_catalog(catalog, exptime=args.exptime, moon=args.moon, spectro=args.spectro, output=args.output)
+    process_catalog(catalog, exptime=args.exptime, moon=args.moon,
+                    spectro=args.spectro, output=args.output,
+                    template_path=args.path)
 

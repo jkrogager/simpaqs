@@ -110,7 +110,7 @@ def add_quasar_continuum(templates, dust_mode='exponential', BAL=False, output_d
         # based roughly on Krawczyk et al. 2015
         Ebv_all = stats.expon.rvs(loc=0., scale=0.05, size=nqso)
     else:
-        Ebv_all = stats.uniform.rvs(0., 0.3, size=nqso)
+        Ebv_all = stats.uniform.rvs(0., 0.5, size=nqso)
     dust = SMCDustVar(FixedSampler(Ebv_all))
 
     qsos = QsoSimPoints([M, z, dust], cosmo=Planck13, units='luminosity')
