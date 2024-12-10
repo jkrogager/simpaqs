@@ -61,7 +61,6 @@ import os
 import lya
 
 
-H2_TEMPLATES = glob.glob('molecules/*.fits')
 depletion_sequence = depletion.coeffs
 
 
@@ -217,15 +216,35 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_m
     return transmission, parameters, log, linelist
 
 
-def add_H2(z, wl):
+def add_H2(z, wl, logN):
+    H2_TEMPLATES = glob.glob('molecules/H2_template*.fits')
     temp_fname = np.random.choice(H2_TEMPLATES)
     H2 = Table.read(temp_fname)
-    T = H2.meta['T_01']
-    tau = np.interp(wl, H2['WAVE'], H2['TAU'], left=0., right=0.)
-    logN = np.random.uniform(18, 21)
-    tau *= 10**(logN-20)
+    T = H2.meta['TEMP']
+    logN_ref = H2.meta['LOG_NH2']
+    tau = np.interp(wl, H2['WAVE']*(1+z), H2['TAU'], left=0., right=0.)
+    tau *= 10**(logN-logN_ref)
     transmission = np.exp(-tau)
-    return transmission, logN, T
+    return transmission, T
+
+
+def add_CI(z, wl, logN, T=None):
+    if T:
+        CI_templates = glob.glob(f'molecules/CI_template_T{T:.0f}_*.fits')
+        if len(CI_templates) == 0:
+            CI_templates = glob.glob('molecules/CI_template*.fits')
+            print(f"No template found matching the given temperature {T:.0f}. Try `T=None`")
+    else:
+        CI_templates = glob.glob('molecules/CI_template*.fits')
+    temp_fname = np.random.choice(CI_templates)
+    CI = Table.read(temp_fname)
+    T = CI.meta['TEMP']
+    n = CI.meta['DENSITY']
+    logN_ref = CI.meta['LOG_NCI']
+    tau = np.interp(wl, CI['WAVE']*(1+z), CI['TAU'], left=0., right=0.)
+    tau *= 10**(logN-logN_ref)
+    transmission = np.exp(-tau)
+    return transmission, T, n
 
 
 def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
@@ -250,21 +269,26 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
     P_lya = np.prod(P_list, axis=0)
 
     metal_profiles = []
+    H2_profiles = []
+    H2_profiles.append(np.ones_like(wl))
     meta_data = []
+    logNH2 = 0
+    logNCI = 0
+    T_01 = 0
+    n_H = 0
     for z, logNHI in absorbers:
         if logNHI > 20.:
             Z = np.random.normal(-1.5, 0.5)
-            # Z = np.random.uniform(-3.0, 0.1)
             N_comps = np.random.randint(3, 10)
             dV = np.random.uniform(200, 500)
             delta = 0.73*Z + 1.26 + np.random.normal(0., 0.2)
             H2_random_number = np.random.uniform(0, 100)
-            if z > 2.4 and H2_random_number < 10:
-                P_H2, logNH2, T_01 = add_H2(z, wl)
-            else:
-                this_H2_profile = np.ones_like(wl)
-                logNH2 = 0
-                T_01 = 0
+            if z > 2.4 and H2_random_number < 20:
+                logNH2 = np.random.uniform(19, 21)
+                logNCI = np.random.uniform(13, 15)
+                this_H2_profile, T_01 = add_H2(z, wl, logNH2)
+                this_CI_profile, T_CI, n_H = add_CI(z, wl, logNCI, T=T_01)
+                H2_profiles.append(this_H2_profile * this_CI_profile)
         else:
             Z = np.random.normal(-1.8, 0.3)
             N_comps = np.random.randint(1, 3)
@@ -280,8 +304,11 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
                           'dV90': dV,
                           'delta': delta,
                           'logNH2': logNH2,
-                          'T_01': T_01})
+                          'logNCI': logNCI,
+                          'T_01': T_01,
+                          'n_H': n_H})
     P_metals = np.prod(metal_profiles, axis=0)
+    P_H2 = np.prod(H2_profiles, axis=0)
 
     transmission = P_lya * P_metals * P_H2
     profile_conv = convolve(transmission, kernel)
@@ -309,7 +336,9 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
         h['REDSHIFT'] = item['z_sys']
         h['LOG_NHI'] = item['logNHI']
         h['LOG_NH2'] = item['logNH2']
-        h['H2_TEMP'] = item['T_01']
+        h['LOG_NCI'] = item['logNCI']
+        h['TEMP'] = item['T_01']
+        h['DENSITY'] = item['n_H']
         h['Z_TOT'] = item['Z_tot']
         h['DV_90'] = item['dV90']
         h['DELTA'] = item['delta']
@@ -338,7 +367,9 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
                          'Z_ABS': item['z_sys'],
                          'LOG_NHI': item['logNHI'],
                          'LOG_NH2': item['logNH2'],
-                         'H2_TEMP': item['T_01'],
+                         'LOG_NCI': item['logNCI'],
+                         'TEMP': item['T_01'],
+                         'DENSITY': item['n_H'],
                          'Z_TOT': item['Z_tot'],
                          'DELTA': item['delta'],
                          'DV_90': item['dV90'],

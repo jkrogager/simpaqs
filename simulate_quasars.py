@@ -162,18 +162,21 @@ def add_quasar_continuum(templates, dust_mode='exponential', BAL=False, output_d
             # for appearance of values greater than 1 in the abs_template')
         
         spec = spec * absorber['FLUX_DENSITY']
-        bal_type = np.random.choice(['hibal_1', 'hibal_2', 'felobal', 'none'], p=[0.2, 0.2, 0.2, 0.4])
+        bal_type = 'none'
+        if BAL:
+            bal_type = np.random.choice(['hibal_1', 'hibal_2', 'felobal', 'none'],
+                                        p=[0.2, 0.2, 0.2, 0.4])
+            if bal_type != 'none':
+                # Incude a random BAL template
+                bal_wl, models = bal_models[bal_type]
+                model_num = np.random.randint(0, len(models))
+                if len(models[model_num]) == 2:
+                    _, trans = models[model_num]
+                else:
+                    trans = models[model_num]
+                bal_trans = np.interp(wave, bal_wl*(z_all[num] + 1), trans)
+                spec = spec * bal_trans
         all_bal_types.append(bal_type)
-        if BAL and bal_type != 'none':
-            # Incude a random BAL template
-            bal_wl, models = bal_models[bal_type]
-            model_num = np.random.randint(0, len(models))
-            if len(models[model_num]) == 2:
-                _, trans = models[model_num]
-            else:
-                trans = models[model_num]
-            bal_trans = np.interp(wave, bal_wl*(z_all[num] + 1), trans)
-            spec = spec * bal_trans
 
         hdu = fits.HDUList()
         hdr = fits.Header()
