@@ -15,7 +15,7 @@ for arm in arms:
     with fits.open(fname) as hdu:
         tab = hdu[1].data
         wl = tab['WAVE']
-    pixsize = 0.25
+    pixsize = 0.1
     R_interp = spline(l, R, s=0.)
     res_pixel = R_interp(wl) / wl / pixsize / 2.355
     resolution[arm] = (wl, res_pixel)

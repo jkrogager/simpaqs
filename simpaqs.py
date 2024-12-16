@@ -12,12 +12,12 @@ __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
 
 
 # -- Input parameters
-Z_MIN = 1.
+Z_MIN = 2.
 Z_MAX = 4.
-EXPTIME = 2400  # seconds
+EXPTIME = 3600  # seconds
 MOON = 'dark'
-MAG_MIN = 18
-MAG_MAX = 20.5
+MAG_MIN = 19
+MAG_MAX = 19.1
 OUTPUT_DIR = 'output/paqs_H2'
 QSO_OUTPUT_DIR = 'output/quasar_models'
 BAL = False

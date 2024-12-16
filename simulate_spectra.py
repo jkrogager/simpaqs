@@ -96,18 +96,18 @@ def run_ETC_target(qmost, target, output_dir, template_path='output/quasar_model
     dxu = L1DXU(obs.observatory, res, texp)
 
     # Write individual L1 files
-    for arm_name in obs.keys():
-        INST = 'L' if target.spectro.lower() == 'lrs' else 'H'
-        INST += arm_name.upper()[0]
-        INST += '1'
-        output_arm = os.path.join(output_dir, f'{target.name}_{INST}.fits')
-        try:
-            hdu_list = dxu.per_arm(arm_name)
-            hdu_list = update_header(hdu_list, target)
-            hdu_list.writeto(output_arm, overwrite=True)
-        except ValueError as e:
-            print(f"Failed to save the spectrum: {target.template}")
-            print(f"for arm: {arm_name}")
+    # for arm_name in obs.keys():
+    #     INST = 'L' if target.spectro.lower() == 'lrs' else 'H'
+    #     INST += arm_name.upper()[0]
+    #     INST += '1'
+    #     output_arm = os.path.join(output_dir, f'{target.name}_{INST}.fits')
+    #     try:
+    #         hdu_list = dxu.per_arm(arm_name)
+    #         hdu_list = update_header(hdu_list, target)
+    #         hdu_list.writeto(output_arm, overwrite=True)
+    #     except ValueError as e:
+    #         print(f"Failed to save the spectrum: {target.template}")
+    #         print(f"for arm: {arm_name}")
 
     if target.spectro.lower() == 'lrs':
         # Create JOINED L1 SPECTRUM:

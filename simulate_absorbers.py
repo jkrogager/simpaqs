@@ -64,7 +64,7 @@ import lya
 depletion_sequence = depletion.coeffs
 
 
-def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_min=5., b_max=15., f_lim=1.e-2):
+def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=50, b_min=5., b_max=15.):
     """
     Create a synthetic metal profile for singly ionized species (OI in case of oxygen).
 
@@ -92,7 +92,7 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_m
     wl : np.array
         The wavelength array on which to evaluate the absorption profile
 
-    logN_weight : float [default = 100]
+    logN_weight : float [default = 10]
         The weighting of individual components. The total column density is distributed
         randomly among components based on the weight drawn from the interval [1, logN_weight].
         The column density scales are then normalized to unity and multiplied by the
@@ -103,10 +103,6 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_m
 
     b_max : float [default = 15]
         A random b-parameter in units of km/s is drawn from the interval [b_min, b_max].
-
-    f_lim : float [default = 1.e-2]
-        The minimum limit of oscillator strength to be considered. Only lines stronger
-        than this limit will be included in the calculations
 
     Returns
     -------
@@ -156,14 +152,12 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_m
             ion = f'{X}I'
         else:
             ion = f'{X}II'
-        transitions = show_transitions(ion, lower=1000.)
+        transitions = show_transitions(ion, lower=912.)
         logN_str = ', '.join(["%.2f" % np.log10(N_i) for N_i in N])
         log.append(f"{ion}: " + logN_str)
         parameters[ion] = np.log10(N)
         for trans in transitions:
             for z_i, b_i, N_i in zip(z, b, N):
-                if np.log10(N_i) < 10.:
-                    continue
                 tau += Voigt(wl, trans['l0'], trans['f'], N_i, b_i*1.e5, trans['gam'], z=z_i)
                 linelist.append([trans['trans'], trans['l0']*(z_i+1)])
 
@@ -193,14 +187,12 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=100, b_m
             logN_X = 1.2*Z + 15.3
         N_IV = 10**logN_X * N_scale_IV
         ion = f'{X}IV'
-        transitions = show_transitions(ion, lower=1000., flim=f_lim)
+        transitions = show_transitions(ion, lower=1000.)
         logN_str = ', '.join(["%.2f" % np.log10(N_i) for N_i in N_IV])
         log.append(f"{ion}: " + logN_str)
         parameters[ion] = np.log10(N)
         for trans in transitions:
             for z_i, b_i, N_i in zip(z_IV, b_IV, N_IV):
-                if np.log10(N_i) < 10.:
-                    continue
                 tau += Voigt(wl, trans['l0'], trans['f'], N_i, b_i*1.e5, trans['gam'], z=z_i)
                 linelist.append([trans['trans'], trans['l0']*(z_i+1)])
 
@@ -272,23 +264,28 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
     H2_profiles = []
     H2_profiles.append(np.ones_like(wl))
     meta_data = []
-    logNH2 = 0
-    logNCI = 0
-    T_01 = 0
-    n_H = 0
     for z, logNHI in absorbers:
+        logNH2 = 0
+        logNCI = 0
+        T_01 = 0
+        n_H = 0
         if logNHI > 20.:
-            Z = np.random.normal(-1.5, 0.5)
+            # Following De Cia et al. 2018
+            Z = np.random.normal(-1.1, 0.5)
             N_comps = np.random.randint(3, 10)
             dV = np.random.uniform(200, 500)
-            delta = 0.73*Z + 1.26 + np.random.normal(0., 0.2)
-            H2_random_number = np.random.uniform(0, 100)
-            if z > 2.4 and H2_random_number < 20:
-                logNH2 = np.random.uniform(19, 21)
-                logNCI = np.random.uniform(13, 15)
-                this_H2_profile, T_01 = add_H2(z, wl, logNH2)
-                this_CI_profile, T_CI, n_H = add_CI(z, wl, logNCI, T=T_01)
-                H2_profiles.append(this_H2_profile * this_CI_profile)
+            # Following De Cia et al. 2016, corrected for -0.4*0.73
+            # as they use [Zn/H] observed without dust corrections.
+            delta = 0.73*Z + 1.0 + np.random.normal(0., 0.2)
+            delta = max(delta, 0)
+            if z > 2.4:
+                H2_random_number = np.random.uniform(0, 100)
+                if H2_random_number < 50:
+                    logNH2 = np.random.uniform(19, 21)
+                    logNCI = np.random.uniform(13, 15)
+                    this_H2_profile, T_01 = add_H2(z, wl, logNH2)
+                    this_CI_profile, T_CI, n_H = add_CI(z, wl, logNCI, T=T_01)
+                    H2_profiles.append(this_H2_profile * this_CI_profile)
         else:
             Z = np.random.normal(-1.8, 0.3)
             N_comps = np.random.randint(1, 3)
