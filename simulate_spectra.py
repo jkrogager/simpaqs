@@ -72,7 +72,8 @@ def run_ETC_target(qmost, target, output_dir, template_path='output/quasar_model
     obs = qmost(airmass, target.seeing*u.arcsec, target.moon)
 
     # The target spectrum template.
-    spectrum = SEDTemplate(os.path.join(template_path, target.template))
+    template_filename = os.path.join(template_path, target.template)
+    spectrum = SEDTemplate(template_filename)
 
     # Add the target spectrum from the template with a magnitude
     obs.set_target(spectrum(target.mag*u.ABmag, target.mag_type), 'point')
@@ -89,7 +90,7 @@ def run_ETC_target(qmost, target, output_dir, template_path='output/quasar_model
     N_pix = len(res)
     N_cosmic = np.random.poisson(CR_rate * target.exptime * N_pix * 0.8)
     idx = np.random.choice(np.arange(N_pix), N_cosmic, replace=False)
-    CR_boost = 10**np.random.normal(4.0, 0.1, N_cosmic) * u.electron
+    CR_boost = 10**np.random.normal(2.0, 0.5, N_cosmic) * u.electron
     res['target'][idx] += CR_boost
     res['noise'][idx] = np.sqrt(res['noise'][idx]**2 + CR_boost * u.electron)
 
@@ -172,7 +173,7 @@ def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5, template
     qmost = QMostObservatory(spectro.lower())
     for num, row in enumerate(tqdm(catalog), 1):
         target = Target(row)
-        run_ETC_target(qmost, target, output, template_path='output/quasar_models')
+        run_ETC_target(qmost, target, output, template_path=template_path)
         #sys.stdout.write(f"\r{num}/{len(catalog)}")
         #sys.stdout.flush()
     #print("")

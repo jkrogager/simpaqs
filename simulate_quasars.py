@@ -165,11 +165,12 @@ def add_quasar_continuum(templates, dust_mode='exponential', BAL=False, output_d
         bal_type = 'none'
         if BAL:
             bal_type = np.random.choice(['hibal_1', 'hibal_2', 'felobal', 'none'],
-                                        p=[0.2, 0.2, 0.2, 0.4])
+                                        p=[0.25, 0.25, 0.25, 0.25])
             if bal_type != 'none':
                 # Incude a random BAL template
                 bal_wl, models = bal_models[bal_type]
                 model_num = np.random.randint(0, len(models))
+                bal_type = bal_type + f':{model_num}'
                 if len(models[model_num]) == 2:
                     _, trans = models[model_num]
                 else:
@@ -213,9 +214,6 @@ def add_quasar_continuum(templates, dust_mode='exponential', BAL=False, output_d
     # Write input parameter table:
     subset = qsos.data['ID', 'z', 'absMag', 'smcDustEBV', 'LOG_MBH', 'LOG_REDD', 'BAL_TYPE', 'ABS_TEMP']
     subset.rename_column('z', 'REDSHIFT')
-    if os.path.exists(f'{output_dir}/model_input.csv'):
-        old_subset = Table.read(f'{output_dir}/model_input.csv')
-        subset = table.vstack([old_subset, subset])
     subset.write(f'{output_dir}/model_input.csv', overwrite=True)
     return subset
 

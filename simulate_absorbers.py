@@ -281,8 +281,8 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
             if z > 2.4:
                 H2_random_number = np.random.uniform(0, 100)
                 if H2_random_number < 50:
-                    logNH2 = np.random.uniform(19, 21)
-                    logNCI = np.random.uniform(13, 15)
+                    logNH2 = np.random.uniform(19, 22)
+                    logNCI = np.random.uniform(14, 16)
                     this_H2_profile, T_01 = add_H2(z, wl, logNH2)
                     this_CI_profile, T_CI, n_H = add_CI(z, wl, logNCI, T=T_01)
                     H2_profiles.append(this_H2_profile * this_CI_profile)
@@ -391,18 +391,21 @@ def make_absorber_templates(N_total, z_min=1.0, z_max=4.0, output_dir='output/ab
             #sys.stdout.write("\r %i / %i" % (num, N_total))
             #sys.stdout.flush()
     filelog = Table(info_list)
-    filelog.write("output/list_templates.csv", format='csv', overwrite=True)
+    filelog.write(os.path.join(output_dir, "list_templates.csv"),
+                  format='csv', overwrite=True)
     abslog = Table(abs_info_list)
-    abslog.write("output/list_absorbers.csv", format='csv', overwrite=True)
+    abslog.write(os.path.join(output_dir, "list_absorbers.csv"),
+                 format='csv', overwrite=True)
     all_dlas = (abslog['LOG_NHI'] > 20.3) & (abslog['Z_ABS'] > 2.05)
     DLAlog = abslog[all_dlas]
-    DLAlog.write("output/list_dlas.csv", format='csv', overwrite=True)
+    DLAlog.write(os.path.join(output_dir, "list_dlas.csv"),
+                 format='csv', overwrite=True)
     if verbose:
         print("")
         print("Wrote summary files:")
-        print("Template list: output/list_templates.csv")
-        print("Absorber list: output/list_absorbers.csv")
-        print("DLA list: output/list_dlas.csv")
+        print(f"Template list: {output_dir}/list_templates.csv")
+        print(f"Absorber list: {output_dir}/list_absorbers.csv")
+        print(f"DLA list: {output_dir}/list_dlas.csv")
         print(f"Finished in {datetime.datetime.now() - start}")
     return filelog, abslog, DLAlog
 
