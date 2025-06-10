@@ -18,9 +18,9 @@ EXPTIME = 3000  # seconds
 MOON = 'dark'
 MAG_MIN = 19
 MAG_MAX = 20.5
-OUTPUT_DIR = 'output/L1'
-ABS_MODELS_DIR = 'output/IGM'
-QSO_MODELS_DIR = 'output/BALQSOs'
+OUTPUT_DIR = 'output/l1_data'
+ABS_MODELS_DIR = 'output/abs'
+QSO_MODELS_DIR = 'output/quasars'
 BAL = True
 ##########################
 

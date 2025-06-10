@@ -184,7 +184,7 @@ def add_quasar_continuum(templates, dust_mode='exponential', BAL=False, output_d
         hdr['AUTHOR'] = 'JK Krogager'
         hdr['COMMENT'] = 'Synthetic quasar + absorber model based on simqso'
         hdr['REDSHIFT'] = z_all[num]
-        hdr['MAG'] = (M_all[num], "Abs. magnitude 1450")
+        hdr['M_1450'] = (M_all[num], "Abs. magnitude 1450")
         hdr['EBV'] = (Ebv_all[num], "Mag")
         hdr['LOG_MBH'] = (logM_BH[num], "log(M_BH / Msun)")
         hdr['LOG_REDD'] = (logR_Edd[num], "log(R_Edd)")

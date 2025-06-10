@@ -21,7 +21,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from tqdm import tqdm
 
-from qmostetc import QMostObservatory, SEDTemplate, Spectrum, L1DXU
+from qmostetc import QMostObservatory, SEDTemplate, L1DXU
 
 
 class Target:
@@ -87,12 +87,12 @@ def run_ETC_target(qmost, target, output_dir, template_path='output/quasar_model
         res['sky'][np.isnan(res['sky'])] = 0.
 
     # Add cosmic rays:
-    N_pix = len(res)
-    N_cosmic = np.random.poisson(CR_rate * target.exptime * N_pix * 0.8)
-    idx = np.random.choice(np.arange(N_pix), N_cosmic, replace=False)
-    CR_boost = 10**np.random.normal(2.0, 0.5, N_cosmic) * u.electron
-    res['target'][idx] += CR_boost
-    res['noise'][idx] = np.sqrt(res['noise'][idx]**2 + CR_boost * u.electron)
+    # N_pix = len(res)
+    # N_cosmic = np.random.poisson(CR_rate * target.exptime * N_pix * 0.8)
+    # idx = np.random.choice(np.arange(N_pix), N_cosmic, replace=False)
+    # CR_boost = 10**np.random.normal(2.0, 0.5, N_cosmic) * u.electron
+    # res['target'][idx] += CR_boost
+    # res['noise'][idx] = np.sqrt(res['noise'][idx]**2 + CR_boost * u.electron)
 
     dxu = L1DXU(obs.observatory, res, texp)
 
@@ -156,8 +156,8 @@ def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5, template
     catalog['TEMPLATE'] = ['%s.fits' % f for f in catalog['ID']]
     catalog['EXPTIME'] = exptime
     catalog['MOON'] = moon
-    catalog['SEEING'] = np.random.uniform(0.6, 1.2, len(catalog))
-    catalog['AIRMASS'] = np.random.uniform(1.01, 1.3, len(catalog))
+    catalog['SEEING'] = np.random.uniform(0.8, 1.0, len(catalog))
+    catalog['AIRMASS'] = np.random.uniform(1.1, 1.3, len(catalog))
     catalog['SPECTRO'] = spectro
     catalog['MAG_TYPE'] = band
     catalog['MAG'] = np.random.uniform(mag_min, mag_max, len(catalog))
@@ -174,9 +174,6 @@ def process_catalog(catalog, band='DECam.r', mag_min=18., mag_max=20.5, template
     for num, row in enumerate(tqdm(catalog), 1):
         target = Target(row)
         run_ETC_target(qmost, target, output, template_path=template_path)
-        #sys.stdout.write(f"\r{num}/{len(catalog)}")
-        #sys.stdout.flush()
-    #print("")
     catalog.write(os.path.join(output, 'observations.csv'), overwrite=True)
 
 
