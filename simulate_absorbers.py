@@ -28,6 +28,9 @@ by default. For high ionization lines, CIV and SiIV, we use a randomized scaling
 is on average a factor of 10 higher than the low ions. Moreover, the high-ions are distributed
 over a larger dV_90 range (by a factor of 1 to 3).
 
+Molecular hydrogen and neutral carbon are added randomly for DLAs following precalculated excitation
+patterns of the rotational and fine-structure levels.
+
 Dust depletion is taken into account using the depletion sequences by Konstantopoulou et al. 2022,
 following the methodology by De Cia et al. 2016. We do not model alpha-element enhancement.
 

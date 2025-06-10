@@ -3,8 +3,10 @@
 
 Code to generate a sample of random quasars with realistic absorption systems:
 Lyman-alpha forest, Lyman-limit systems and DLAs, including their metal lines
-and molecular and CI fine-structure lines in 20% of the DLAs above z > 2.4.
+and molecular and CI fine-structure lines in DLAs above z > 2.4.
 The metal lines only include singly ionized lines plus CIV and SiIV for now.
+
+Broad absorption lines can be turned on and off.
 
 The code also allows a simulation and exposure time estimation of a 4MOST target catalog.
 For this see the section about *ETC simulator* below.
@@ -32,6 +34,55 @@ Install `simqso` (not needed if only running `simulate_catalog.py`):
     python setup.py install
 
 
+## Run the full simulator
+
+A full run of the simulator can be done using the wrapper script:
+
+    python simpaqs.py  N
+
+
+where `N` is the number of spectra to generate.
+Alternatively, the individual steps can be customized further using the dedicated scripts. 
+
+
+### Output
+The output directories are set in the `simpaqs.py` script. The code generates: 
+ - absorption transmission profiles (`output/abs_templates/`)
+ - noiseless quasar continuum models with absorption (`output/quasar_models/`)
+ - simulated L1 4MOST spectra with noise, telluric absorption and cosmics (joined; `output/l1_data/`)
+
+The code also saves a list of the absorption templates generated,
+the absorption systems and their properties, as well as a list of DLAs.
+The quasar continuum parameters are also saved in the `quasar_models` directory,
+and lastly, the observational parameters are saved in the catalog file 'observations.csv'
+in the `l1_data` directory.
+The BAL template type is given in the quasar model list `BAL_TYPE` and refers to the set of models
+in the BAL/ directory. The number following the `:` gives the index of the model array, e.g.,
+`BAL_TYPE = hibal_1:4` for index 4 of the `hibal_1` models (remember python is 0-indexed).
+
+
+## Methodology
+
+Quickly summarized, the code generates a set of quasar redshift uniformly sampled between
+the minimum and maximum redshift given in `simpaqs.py`. For each quasar redshift, a random
+Lyman-alpha forest realisation is generated including a realistic sampling of the HI column
+density distribution. For high column density systems, the most frequent metal absorption lines
+are included and for the very highest column densities, molecular hydrogen and neutral carbon is included.
+Next, the quasar emission lines are generated following the luminosity accordingly to the Baldwin effect
+and dust reddening is applied.
+Lastly, a set of BAL features are included (50% High-ion BALs, 25% FeLoBAL, 25% no-BAL). The BAL templates
+can be turned off.
+
+The generated mock spectra are then passed through the 4MOST ETC which resamples the spectra accordingly,
+and adds realistic noise and telluric absorption features as well as cosmic rays.
+
+See the individual documentation in the three simulator modules:
+[simulate absorbers](simulate_absorbers.py), [simulate quasars](simulate_quasars.py),
+and [simulate spectra](simulate_spectra.py).
+
+
+
+
 ## Run the ETC and L1 simulation
 
 The script `simulate_catalog.py` will take a 4MOST target catalog with an associated
@@ -54,38 +105,6 @@ The catalog, templates, rules and rulesets must follow the 4FS file formats!
 ### Output
 
 The output directory is given in the command line `--output` and will contain the simulated L1 spectra (see the L1 pipeline documentationand DXU for format definitions). This folder will also contain a file `exposure_times.csv` which lists the target name, magnitude, estimated exposure time and redshift.
-
-
-
-## Run the full simulator
-
-A full run of the simulator can be done using the wrapper script:
-
-    python simpaqs.py  N
-
-
-where `N` is the number of spectra to generate.
-Alternatively, the individual steps can be customized further using the dedicated scripts. 
-
-
-### Output
-The code generates: 
- - absorption transmission profiles (`abs_templates/`)
- - noiseless quasar continuum models with absorption (`quasar_models/`)
- - simulated L1 4MOST spectra with noise and cosmics (individual arms and joined; `l1_data/`)
-
-The code also saves a list of the absorption templates generated,
-the absorption systems and their properties, as well as a list of DLAs.
-The quasar continuum parameters are also saved in the `quasar_models` directory,
-and lastly, the observational parameters are saved in the catalog file 'observations.csv'
-in the `l1_data` directory.
-
-
-## Methodology
-
-See the individual documentation in the three simulator modules:
-[simulate absorbers](simulate_absorbers.py), [simulate quasars](simulate_quasars.py),
-and [simulate spectra](simulate_spectra.py).
 
 
 ## Create a mock target catalog and simulate it
