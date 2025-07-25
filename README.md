@@ -21,12 +21,6 @@ Clone the code:
     python -m pip install -r requirements.txt
 
 
-Install 4MOST ETC:
-
-    QMOST_PYPI=https://gitlab.4most.eu/api/v4/projects/212/packages/pypi/simple
-    python -m pip install --extra-index-url $QMOST_PYPI qmostetc
-
-
 Install `simqso` (not needed if only running `simulate_catalog.py`):
 
     git clone git@github.com:imcgreer/simqso.git
@@ -44,11 +38,13 @@ A full run of the simulator can be done using the wrapper script:
 where `N` is the number of spectra to generate.
 Alternatively, the individual steps can be customized further using the dedicated scripts. 
 
+You can edit the parameters in the simpaqs script, such as whether to include BALs or not. The expsoure time, magnitude range, redshift range, etc.
+
 
 ### Output
-The output directories are set in the `simpaqs.py` script. The code generates: 
+The output directories are set in the `simpaqs.py` script and can be changed there. The code generates:
  - absorption transmission profiles (`output/abs_templates/`)
- - noiseless quasar continuum models with absorption (`output/quasar_models/`)
+ - noiseless quasar continuum models with absorption and BALs (`output/quasar_models/`)
  - simulated L1 4MOST spectra with noise, telluric absorption and cosmics (joined; `output/l1_data/`)
 
 The code also saves a list of the absorption templates generated,
@@ -94,7 +90,7 @@ times per target as well as mock L1 spectra (joined LRS spectra by default). Thi
 The output will be placed in the folder `output/l1_data` by default. The default conditions are as follows:
 
  - seeing : 0.8 arcsec
- - airmass : 1.2
+ - airmass : 1.2 (mid)
  - moon phase : dark
 
 These conditions can be changed using the command line options: `--seeing`, `--airmass`, `--moon`.
