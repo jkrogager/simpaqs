@@ -222,7 +222,7 @@ def save_mock_spectrum(spec_dict, target, filename):
     hdr['OBJ_RA'] = (target.ra, 'Right Ascension of target (deg)')
     hdr['OBJ_DEC'] = (target.dec, 'Declination of target (deg)')
     hdr['QZC_Z'] = (target.redshift, 'Target Redshift')
-    hdr['OBJ_ZERR'] = ((1 + target.mag)*0.01, 'Redshift uncertainty')
+    hdr['OBJ_ZERR'] = ((1 + target.mag)*0.001, 'Redshift uncertainty')
     hdr['OBJ_ZWRN'] = (0, 'Redshift warning flag')
     hdr['OBJ_ZTPL'] = ('QSO', 'Template used for the redshift determination')
     hdr['OBJ_CLSS'] = ('QSO', 'Object classification')
