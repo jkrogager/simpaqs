@@ -314,10 +314,14 @@ if __name__ == '__main__':
     parser = ArgumentParser(description="Generate simulated spectra from input catalog")
     parser.add_argument("input", type=str,
                         help="input catalog file, mandatory columns: TEMPLATE/ID, REDSHIFT, MAG, MAG_TYPE")
-    parser.add_argument('--airmass', type=float, default='mid')
-    parser.add_argument('--exptime', type=float, default=2400)
-    parser.add_argument('--moon', type=str, default='dark')
-    parser.add_argument('--path', type=str, default='output/quasar_models')
+    parser.add_argument('--airmass', type=float, default='mid', choices=['high', 'mid', 'low'],
+                        help="airmass value: high, mid, low")
+    parser.add_argument('--exptime', type=float, default=2400,
+                        help="exposure time in seconds [default=2400, 40 min]")
+    parser.add_argument('--moon', type=str, default='dark', choices=['dark', 'grey'],
+                        help="moon phase: dark, grey")
+    parser.add_argument('--path', type=str, default='output/quasar_models',
+                        help="path to the template spectra")
     parser.add_argument("-o", "--output", type=str, default='output/l1_data/',
                         help="output directory [default=./output/l1_data]")
 
