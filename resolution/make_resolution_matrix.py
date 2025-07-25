@@ -8,6 +8,8 @@ from astropy.table import Table
 
 arms = ['BLUE', 'GREEN', 'RED']
 
+plt.figure()
+
 resolution = {}
 for arm in arms:
     l, R = np.loadtxt('LR_%s.data' % arm.lower(), unpack=True)
@@ -16,9 +18,11 @@ for arm in arms:
         tab = hdu[1].data
         wl = tab['WAVE']
     pixsize = 0.1
-    R_interp = spline(l, R, s=0.)
+    R_interp = spline(l, R, k=1)
     res_pixel = R_interp(wl) / wl / pixsize / 2.355
     resolution[arm] = (wl, res_pixel)
+    plt.plot(l, R, marker='.', ls='', color=arm.lower())
+    plt.plot(wl, R_interp(wl), ls='--', color=arm.lower())
 
 # -- Create Joint Wavelength Grid:
 wl = np.linspace(3700, 9500, 201)
@@ -43,5 +47,5 @@ reso = np.nanmean(reso, axis=0)
 reso /= np.sum(reso, axis=0)
 
 LR = np.vstack([wl, reso])
-np.savetxt('4MOST_LR_kernel.txt', LR)
+# np.savetxt('4MOST_LR_kernel.txt', LR)
 

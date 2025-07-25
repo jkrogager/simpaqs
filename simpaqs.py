@@ -12,8 +12,8 @@ __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
 
 
 # -- Input parameters
-Z_MIN = 1.
-Z_MAX = 4.
+Z_MIN = 2.
+Z_MAX = 3.
 EXPTIME = 3000  # seconds
 MOON = 'dark'
 MAG_MIN = 19
@@ -21,7 +21,7 @@ MAG_MAX = 20.5
 OUTPUT_DIR = 'output/l1_data'
 ABS_MODELS_DIR = 'output/abs'
 QSO_MODELS_DIR = 'output/quasars'
-BAL = True
+BAL = False
 ##########################
 
 N_TOTAL = int(sys.argv[1])

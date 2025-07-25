@@ -44,7 +44,8 @@ class Target:
 
         # assign CNAME:
         model_id = row['ID']
-        self.name = f"{model_id}_z{self.redshift:.1f}_mag{self.mag:.1f}"
+        # self.name = f"{model_id}_z{self.redshift:.1f}_mag{self.mag:.1f}"
+        self.name = f"{model_id}"
 
 
 def run_ETC_target(qmost, target, output_dir, template_path='output/quasar_models', CR_rate=1.67e-7):

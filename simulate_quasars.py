@@ -142,7 +142,8 @@ def add_quasar_continuum(templates, dust_mode='exponential', BAL=False, output_d
     # Save the templates:
     all_ids = []
     all_bal_types = []
-    dnum = len(glob.glob(f'{output_dir}/PAQS_quasar_*.fits')) + 1
+    # dnum = len(glob.glob(f'{output_dir}/PAQS_quasar_*.fits')) + 1
+    dnum = 1
     for num, spec in enumerate(tqdm(spectra)):
         model_id = f'PAQS_quasar_{num+dnum:06}'
         filename = f'{output_dir}/{model_id}.fits'
