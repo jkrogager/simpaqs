@@ -12,22 +12,25 @@ __email__ = 'jens-kristian.krogager@univ-lyon1.fr'
 
 
 # -- Input parameters
-Z_MIN = 2.
+Z_MIN = 1.
 Z_MAX = 3.
-EXPTIME = 3000  # seconds
+EXPTIME = 2400  # seconds
 MOON = 'dark'
-MAG_MIN = 19
+MAG_MIN = 18
 MAG_MAX = 20.5
 OUTPUT_DIR = 'output/l1_data'
 ABS_MODELS_DIR = 'output/abs'
 QSO_MODELS_DIR = 'output/quasars'
-BAL = False
+BAL = True
 ##########################
 
 N_TOTAL = int(sys.argv[1])
 # np.random.seed(20230521)
 
-abs_template_list, abslog, DLAlog = make_absorber_templates(N_TOTAL, z_min=Z_MIN, z_max=Z_MAX, verbose=True,
+abs_template_list, abslog, DLAlog = make_absorber_templates(N_TOTAL,
+                                                            z_min=Z_MIN,
+                                                            z_max=Z_MAX,
+                                                            verbose=True,
                                                             output_dir=ABS_MODELS_DIR)
 
 # abs_template_list = table.Table.read("test/abs/list_templates.csv") # For midway inspection
