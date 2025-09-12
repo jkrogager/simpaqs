@@ -136,6 +136,8 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=30, b_mi
         v_offset = np.array([0])
     else:
         dv = np.random.uniform(-1., 1., N_comps)
+        comp_max = np.argmax(N_scale)
+        dv = dv - dv[comp_max]
         v_offset = dv * dV_90/(dv.max() - dv.min())
         z = z_sys + v_offset/299792*(z_sys+1)
     b_str = ', '.join(["%.2f" % b_i for b_i in b])
@@ -170,10 +172,11 @@ def add_metals(z_sys, logNHI, Z, delta, dV_90, N_comps, wl, logN_weight=30, b_mi
     b_IV = np.random.uniform(25, 45, N_comps)
     if N_comps == 1:
         z_IV = np.array([z_sys])
-        v_offset_IV = np.random.normal(0., 75., size=(1,))
+        v_offset_IV = np.random.normal(0., 25., size=(1,))
     else:
         dv = np.random.uniform(-1., 1., N_comps)
-        v_stretch = np.random.uniform(1., 3., N_comps)
+        dv = dv - dv[np.argmax(N_scale_IV)]
+        v_stretch = np.random.uniform(1., 1.5, N_comps)
         v_offset_IV = dv * v_stretch * dV_90/(dv.max() - dv.min())
         z_IV = z_sys + v_offset_IV/299792*(z_sys+1)
     b_str = ', '.join(["%.2f" % b_i for b_i in b_IV])
