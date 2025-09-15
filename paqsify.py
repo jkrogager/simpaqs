@@ -20,6 +20,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 from tqdm import tqdm
 
+import lya
+
 
 class Target:
     # TEMPLATE,REDSHIFT,MAG,MAG_TYPE,EXPTIME,AIRMASS,MOON,SEEING,SPECTRO
@@ -252,6 +254,21 @@ def save_mock_spectrum(spec_dict, target, filename):
     hdu.writeto(filename, overwrite=True, output_verify='silentfix')
 
 
+def make_lya_forest(wl, z_qso):
+
+    # Draw random samle of absorbers:
+    # The calculation is split into subsets in redshift space
+    # due to the limitations of the redshift distribution approximation
+    # used in `lya.py`
+    z_edges = np.linspace(2, z_qso, 3)
+    P_list = []
+    for z1, z2 in zip(z_edges[:-1], z_edges[1:]):
+        p_i, abs_i = lya.lya_transmission_noconv(z1, z2, wl)
+        P_list.append(p_i)
+    P_lya = np.prod(P_list, axis=0)
+    return P_lya
+
+
 def run_ETC_target(target, output_dir, template_path=''):
     """
     Run the ETC for a given target. The function generates the separate spectra per arm
@@ -274,6 +291,11 @@ def run_ETC_target(target, output_dir, template_path=''):
     temp_wl = spectrum['LAMBDA'] * (1 + target.redshift)
     temp_flux = spectrum['FLUX_DENSITY']
     temp_flux = normalize_flux(temp_wl, temp_flux, target.mag)
+
+    # if high redshift, add Lyman-alpha forest
+    if target.redshift > 2:
+        T_lya = make_lya_forest(temp_wl, target.redshift)
+        temp_flux *= T_lya
 
     # Create Mock Observation
     transmission = get_transmission(airmass=target.airmass)
