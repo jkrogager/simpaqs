@@ -1,0 +1,15 @@
+# delta = 0.73*Z + 1.0
+
+name: high-metal
+
+z_qso: 3.5
+
+absorbers: 
+  - z_abs: 2.8
+    logNHI: 20.8
+    logNH2: 0
+    logNCI: 15.0
+    logZ: 0.0
+    delta: 0.5
+    dv90: 500
+    N: 12

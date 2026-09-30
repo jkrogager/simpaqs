@@ -159,6 +159,7 @@ def apply_noise(temp_wl, temp_flux, sky_model, throughput, transmission, t_exp=2
     var_all = list()
     flux_all = list()
     qual_all = list()
+    sky_all = list()
     for arm_num, arm in enumerate(all_arms):
         # Look up the skymodel for the given arm:
         sky = sky_model[arm]  # in units of electrons
@@ -190,20 +191,27 @@ def apply_noise(temp_wl, temp_flux, sky_model, throughput, transmission, t_exp=2
         noise = np.sqrt(source + sky + N_pix*RON[arm]**2)
         sensitivity = A_tel * pixel_size * t_exp * Q_eff * SQF * wl / hc
         err_arm = np.interp(wl_joint, wl, noise/sensitivity, left=np.nan, right=np.nan)
-        flux_arm = np.interp(wl_joint, wl, source/sensitivity, left=np.nan, right=np.nan)
+        flux_arm = np.interp(wl_joint, wl, (source+sky)/sensitivity, left=np.nan, right=np.nan)
+        sky_arm = np.interp(wl_joint, wl, sky/sensitivity, left=np.nan, right=np.nan)
         qual_arm = np.interp(wl_joint, wl, qual, left=0, right=0)
         qual_arm = 1*(qual_arm > 0)
         var_all.append(err_arm**2)
         flux_all.append(flux_arm)
         qual_all.append(qual_arm)
+        sky_all.append(sky_arm)
     flux_all = np.array(flux_all)
     var_all = np.array(var_all)
-    flux_joint = np.nansum(flux_all/var_all, axis=0) / np.nansum(1./var_all, axis=0)
-    flux_joint = flux_joint * transmission
-    err_joint = np.sqrt(1./np.nansum(1./var_all, axis=0))
+    sky_all = np.array(sky_all)
+
+    sky_joint = np.nanmean(sky_all, axis=0)
+    flux_joint = np.nansum(flux_all/var_all, axis=0) / np.nansum(1/var_all, axis=0)
+    # flux_joint = flux_joint * transmission
+    err_joint = np.sqrt(1/np.nansum(1/var_all, axis=0))
     qual_joint = 1*(np.sum(qual_all, axis=0) > 0)
     noise = np.random.normal(0., 1., N_pix_in_spectrum)
     flux_joint = flux_joint + noise*err_joint
+    sky_model = sky_joint * np.random.normal(1., 0.03, N_pix_in_spectrum)
+    flux_joint = flux_joint - sky_model
 
     return {'WAVE': wl_joint,
             'FLUX': flux_joint,

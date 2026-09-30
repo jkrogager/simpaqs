@@ -1,0 +1,16 @@
+# delta = 0.73*Z + 1.0
+
+name: high-z-21
+
+z_qso: 4.5
+
+absorbers: 
+  - z_abs: 4.0
+    logNHI: 20.8
+    logNH2: 21.
+    logNCI: 14.0
+    logZ: -1.0
+    delta: 0.3
+    dv90: 400
+    N: 6
+
