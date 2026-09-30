@@ -1,0 +1,15 @@
+# delta = 0.73*Z + 1.0
+
+name: low-z
+
+z_qso: 2.7
+
+absorbers: 
+  - z_abs: 2.5
+    logNHI: 20.8
+    logNH2: 20.
+    logNCI: 14.0
+    logZ: -1.0
+    delta: 0.3
+    dv90: 400
+    N: 6
