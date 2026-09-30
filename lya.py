@@ -81,17 +81,27 @@ def get_absorbers(zmin, zmax, verbose=False):
     return np.column_stack([random_z, random_b, random_NHI])
 
 
-def lya_transmission_noconv(zmin, zmax, wl):
+def lya_transmission_noconv(zmin, zmax, wl, absorbers=None, NHI_limit=1e23):
+    """
+    You can force your own absorbers by giving a list of tuples or lists
+    with redshift, b-parameter and NHI: absorbers=[(1.0, 25., 1e18)]
+    """
     LLS = list()
 
     abs_data = get_absorbers(zmin, zmax)
+
+    abs_limit = abs_data[:, -1] < NHI_limit
+    abs_data = abs_data[abs_limit]
+    if absorbers is not None:
+        abs_data = np.vstack([abs_data, np.array(absorbers)])
+
     lmin = np.min(wl)
     lmax = np.max(wl)
 
     tau = np.zeros_like(wl)
     for z, b, NHI in abs_data:
         l_LL = 911.7641 * (z+1)
-        if NHI > 1.e18:
+        if NHI > 2.e17:
             LLS.append((z, np.log10(NHI)))
 
         for l0, f, gam, _ in HI_data:

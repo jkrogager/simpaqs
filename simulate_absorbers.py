@@ -50,11 +50,11 @@ import datetime
 import numpy as np
 
 import VoigtFit
-from VoigtFit.funcs.voigt import Voigt, convolve
-from VoigtFit import show_transitions
-from VoigtFit.utils.Asplund import solar
-from VoigtFit.utils import depletion
-from VoigtFit.container.regions import load_lsf
+from VoigtFit.voigt import Voigt, convolve
+from VoigtFit.lines import show_transitions
+from VoigtFit.Asplund import solar
+from VoigtFit import depletion
+from VoigtFit.regions import load_lsf
 from tqdm import tqdm
 
 import glob
@@ -245,7 +245,7 @@ def add_CI(z, wl, logN, T=None):
     return transmission, T, n
 
 
-def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
+def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates', full_forest=True, NHI_max=1e23, force_DLA=False):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -257,11 +257,28 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
     # The calculation is split into subsets in redshift space
     # due to the limitations of the redshift distribution approximation
     # used in `lya.py`
-    z_edges = np.linspace(0, z_qso, 5)
+    if full_forest:
+        z_edges = np.linspace(0, z_qso, 5)
+    else:
+        z_edges = np.linspace(2, z_qso, 3)
+
+    if force_DLA and z_qso > 2.:
+        z_i = np.random.uniform(2., z_qso)
+        NHI_i = np.random.uniform(1e20, 1e22)
+        b_i = np.random.uniform(5, 15)
+        abs_data = [(z_i, b_i, NHI_i)]
+    else:
+        abs_data = None
+
     absorbers = []
     P_list = []
+    count = 0
+
     for z1, z2 in zip(z_edges[:-1], z_edges[1:]):
-        p_i, abs_i = lya.lya_transmission_noconv(z1, z2, wl)
+        p_i, abs_i = lya.lya_transmission_noconv(z1, z2, wl,
+                                                 absorbers=abs_data,
+                                                 NHI_limit=NHI_max)
+
         P_list.append(p_i)
         absorbers += abs_i
     P_lya = np.prod(P_list, axis=0)
@@ -381,7 +398,8 @@ def make_absorber(z_qso, filenum=1, output_dir='output/abs_templates'):
     return template_info, abs_info
 
 
-def make_absorber_templates(N_total, z_min=1.0, z_max=4.0, output_dir='output/abs_templates', verbose=True):
+def make_absorber_templates(N_total, z_min=1.0, z_max=4.0, output_dir='output/abs_templates',
+                            verbose=True, force_DLA=False, full_forest=True, NHI_max=1e23):
     info_list = []
     abs_info_list = []
     quasar_redshifts = np.random.uniform(z_min, z_max, N_total)
@@ -390,7 +408,9 @@ def make_absorber_templates(N_total, z_min=1.0, z_max=4.0, output_dir='output/ab
         print("Making absorber templates:")
         #sys.stdout.write("\r %i / %i" % (0, N_total))
     for num, z_qso in enumerate(tqdm(quasar_redshifts), 1):
-        temp_info, abs_info = make_absorber(z_qso, filenum=num, output_dir=output_dir)
+        temp_info, abs_info = make_absorber(z_qso, filenum=num, output_dir=output_dir,
+                                            NHI_max=NHI_max, full_forest=full_forest,
+                                            force_DLA=force_DLA)
         info_list.append(temp_info)
         abs_info_list += abs_info
         #if verbose:
@@ -427,9 +447,14 @@ def main():
                         help="maximum redshift to simulate  [default=4]")
     parser.add_argument("-o", "--output", type=str, default='output/abs_templates',
                         help="Output directory [default=output/abs_templates]")
+    parser.add_argument("-f", "--force", action="store_true",
+                        help="Always include a DLA?")
+    parser.add_argument("--Nmax", type=float, default=1e23,
+                        help="Maximum NHI to include (default=1e23)")
 
     args = parser.parse_args()
-    templates, absorbers, DLAs = make_absorber_templates(args.number, args.z_min, args.z_max, args.output)
+    templates, absorbers, DLAs = make_absorber_templates(args.number, args.z_min, args.z_max, args.output,
+                                                         force_DLA=args.force, NHI_max=args.Nmax)
 
 
 if __name__ == '__main__':
